@@ -1,18 +1,32 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import firebase from 'firebase';
+import Header from './components/header/Header';
+import Main from './components/main/Main';
+import { Route } from 'react-router-dom';
 import './App.css';
 
 class App extends Component {
+
+  constructor(props) {
+    super(props);
+    var config = {
+      apiKey: "AIzaSyBtDHDpsuv4biDsCnT9r3vsw3KKjSPtoxQ",
+      authDomain: "patriafit-class-scheduler.firebaseapp.com",
+      databaseURL: "https://patriafit-class-scheduler.firebaseio.com",
+      projectId: "patriafit-class-scheduler",
+      storageBucket: "patriafit-class-scheduler.appspot.com",
+      messagingSenderId: "636060870403"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }
+  }
+  
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div>
+        <Header/>
+        <Route exact path='/' component={Main}/>
       </div>
     );
   }
