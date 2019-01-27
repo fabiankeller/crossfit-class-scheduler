@@ -15,19 +15,19 @@ import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
-
 class NewSchedule extends Component {
+
 
   constructor(props) {
     super(props);
-
     firebase.database().ref('coaches/')
       .on('value', snapshot => {
         const coachEntries = snapshot.val();
-        this.setState({ 
+        this.setState({
           coaches: coachEntries,
          })
       });
+
   }
 
   state = {

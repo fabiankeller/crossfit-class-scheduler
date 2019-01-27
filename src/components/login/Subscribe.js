@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import firebase from 'firebase';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -11,6 +12,9 @@ import Fade from '@material-ui/core/Fade';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import green from '@material-ui/core/colors/green';
+import uuidv1 from "uuid/v1";
+import moment from "moment";
+import * as ROLES from '../../constantes/roles'
 
 class SubscribeForm extends Component {
 
@@ -20,7 +24,37 @@ class SubscribeForm extends Component {
             valid: false,
             initial: true,
         },
-        fullName: {
+        firstName: {
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        lastName: {
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        street:{
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        houseNumber:{
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        plz:{
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        place:{
+            value: '',
+            valid: false,
+            initial: true,
+        },
+        dateOfBirth:{
             value: '',
             valid: false,
             initial: true,
@@ -50,7 +84,13 @@ class SubscribeForm extends Component {
         }
         this.setState({
             email: emptyStateObject,
-            fullName: emptyStateObject,
+            firstName: emptyStateObject,
+            lastName: emptyStateObject,
+            stree: emptyStateObject,
+            houseNumber: emptyStateObject,
+            plz: emptyStateObject,
+            place: emptyStateObject,
+            dateOfBirth: emptyStateObject,
             password: emptyStateObject,
             repeatPassword: emptyStateObject,
             formState: {
@@ -64,21 +104,23 @@ class SubscribeForm extends Component {
         if (!this.state.email.valid) {
             this.setState({ formState: { valid: false, message: 'Please provide an email address.' }});
             return;
-        } else if (!this.state.fullName.valid) {
+        } else if (!this.state.firstName.valid || !this.state.lastName.valid) {
             this.setState({ formState: { valid: false, message: 'Please provide a full name.' }});
             return;
-        }  else if ((!this.state.password.valid && !this.state.repeatPassword.valid) 
+        } else if ((!this.state.password.valid && !this.state.repeatPassword.valid)
                     || this.state.password.value !== this.state.repeatPassword.value) {
             this.setState({ formState: { valid: false, message: 'Passwords do not match. Please check again.' }});
             return;
         }
+
         firebase.auth().createUserWithEmailAndPassword(this.state.email.value, this.state.password.value)
             .then(() => {
+                this.saveMemberDetails();
                 const currentUser = firebase.auth().currentUser;
                 
                 // Workaround with logout and login because we need the displayName in the header and only get notified when login.
                 currentUser.updateProfile({
-                    displayName: this.state.fullName.value,
+                    displayName: this.state.firstName.value,
                 })
                 .then(() => {
                     firebase.auth().signOut().then(() => {
@@ -103,6 +145,24 @@ class SubscribeForm extends Component {
             });
     }
 
+    saveMemberDetails = () => {
+        const currentUser = firebase.auth().currentUser;
+        const roles = [ROLES.EINSTEIGER];
+        const newMember = {
+            id: currentUser.uid,
+            firstName: this.state.firstName.value,
+            lastName: this.state.lastName.value,
+            email: this.state.email.value,
+            street: this.state.street.value,
+            plz: this.state.plz.value,
+            place: this.state.place.value,
+            dateOfBirth: this.state.dateOfBirth.value,
+            registrationDate: moment().format('DD.MM.YYYY HH:mm:ss'),
+            roles: roles
+        }
+        firebase.database().ref('members/' + currentUser.uid).set(newMember);
+    }
+
     changeEmail = (event) => {
         const email = event.target.value;
         this.setState({
@@ -114,12 +174,78 @@ class SubscribeForm extends Component {
         });
     }
 
-    changeFullName = (event) => {
-        const fullName = event.target.value;
+    changeFirstName = (event) => {
+        const firstName = event.target.value;
         this.setState({
-            fullName: {
-                value: fullName,
-                valid: !!fullName,
+            firstName: {
+                value: firstName,
+                valid: !!firstName,
+                initial: false,
+            }
+        });
+    }
+
+    changeLastName = (event) => {
+        const lastName = event.target.value;
+        this.setState({
+            lastName: {
+                value: lastName,
+                valid: !!lastName,
+                initial: false,
+            }
+        });
+    }
+
+    changeStreet = (event) => {
+        const street = event.target.value;
+        this.setState({
+            street: {
+                value: street,
+                valid: !!street,
+                initial: false,
+            }
+        });
+    }
+
+    changeHouseNumber = (event) => {
+        const houseNumber = event.target.value;
+        this.setState({
+            houseNumber: {
+                value: houseNumber,
+                valid: !!houseNumber,
+                initial: false,
+            }
+        });
+    }
+
+    changePlz = (event) => {
+        const plz = event.target.value;
+        this.setState({
+            plz: {
+                value: plz,
+                valid: !!plz,
+                initial: false,
+            }
+        });
+    }
+
+    changePlace = (event) => {
+        const place = event.target.value;
+        this.setState({
+            place: {
+                value: place,
+                valid: !!place,
+                initial: false,
+            }
+        });
+    }
+
+    changeDateOfBirth = (event) => {
+        const dateOfBirth = event.target.value;
+        this.setState({
+            dateOfBirth: {
+                value: dateOfBirth,
+                valid: !!dateOfBirth,
                 initial: false,
             }
         });
@@ -178,16 +304,72 @@ class SubscribeForm extends Component {
                             value={this.state.email.value} 
                             onChange={this.changeEmail}
                         />
+
                         <TextField
                             required
-                            error={!this.state.fullName.initial && !this.state.fullName.valid}
+                            error={!this.state.firstName.initial && !this.state.firstName.valid}
                             margin='dense'
-                            id='fullname'
-                            label='Full name'
+                            id='firstname'
+                            label='Firstname'
                             type='text'
                             fullWidth
-                            value={this.state.fullName.value} 
-                            onChange={this.changeFullName}
+                            value={this.state.firstName.value}
+                            onChange={this.changeFirstName}
+                        />
+                        <TextField
+                            required
+                            error={!this.state.lastName.initial && !this.state.lastName.valid}
+                            margin='dense'
+                            id='lastname'
+                            label='Lastname'
+                            type='text'
+                            fullWidth
+                            value={this.state.lastName.value}
+                            onChange={this.changeLastName}
+                        />
+                        <TextField
+                            required
+                            error={!this.state.street.initial && !this.state.street.valid}
+                            margin='dense'
+                            id='street'
+                            label='Street'
+                            type='text'
+                            fullWidth
+                            value={this.state.street.value}
+                            onChange={this.changeStreet}
+                        />
+                        <TextField
+                            required
+                            error={!this.state.plz.initial && !this.state.plz.valid}
+                            margin='dense'
+                            id='plz'
+                            label='PLZ'
+                            type='number'
+                            fullWidth
+                            value={this.state.plz.value}
+                            onChange={this.changePlz}
+                        />
+                        <TextField
+                            required
+                            error={!this.state.place.initial && !this.state.place.valid}
+                            margin='dense'
+                            id='place'
+                            label='Place'
+                            type='text'
+                            fullWidth
+                            value={this.state.place.value}
+                            onChange={this.changePlace}
+                        />
+                        <TextField
+                            required
+                            error={!this.state.dateOfBirth.initial && !this.state.dateOfBirth.valid}
+                            margin='dense'
+                            id='dateofbirth'
+                            label='Date of birth'
+                            type='date'
+                            fullWidth
+                            value={this.state.dateOfBirth.value}
+                            onChange={this.changeDateOfBirth}
                         />
                         <TextField
                             required

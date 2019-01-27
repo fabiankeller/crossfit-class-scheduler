@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import firebase from 'firebase';
 import Header from './components/header/Header';
 import Main from './components/main/Main';
+import Administration from './components/administration/Administration';
 import { Route } from 'react-router-dom';
 import './App.css';
 
@@ -27,6 +28,7 @@ class App extends Component {
       <div>
         <Header/>
         <Route exact path='/' component={Main}/>
+        <Route exact path='/admin' component={Administration}/>
       </div>
     );
   }
